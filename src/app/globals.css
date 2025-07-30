@@ -1,26 +1,59 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Light theme as default */
+  --primary: theme(colors.black);
+  --secondary: theme(colors.stone.400);
+  --background: #faf9f6;
+  --lettertext: theme(colors.black);
+  --maincolor: #ffb7ba;
+  --maincolormuted: #f7c2c4;
+  --streak: #FFA500;
+
+  --cell-selected: theme(colors.stone.500);
+  --cell-deselected: theme(colors.stone.200);
+
+  --skeleton-1: theme(colors.stone.200);
+  --skeleton-2: #faf9f6;
+  --skeleton-3: theme(colors.stone.200);
+
+  --celltext-selected: theme(colors.stone.100);
+  --celltext-deselected: theme(colors.black);
+
+  --calendar-background-started: rgba(138, 198, 209, 0.3);
+  --calendar-border: theme(colors.stone.400);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+.dark {
+  /* Dark theme overrides */
+  --primary: theme(colors.neutral.200);
+  --secondary: theme(colors.neutral.500);
+  --background: #1e1e1e;
+  --lettertext:  #1e1e1e;
+  --maincolor: #f8aaaa;
+  --maincolormuted: #e3c1c1;
+  --streak: #FF8C00;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --cell-selected: theme(colors.neutral.400);
+  --cell-deselected: theme(colors.neutral.700);
+
+  --skeleton-1: theme(colors.neutral.700);
+  --skeleton-2: #1e1e1e;
+  --skeleton-3: theme(colors.neutral.700);
+
+  --celltext-selected: theme(colors.neutral.50);
+  --celltext-deselected: theme(colors.neutral.50);
+
+  --calendar-background-started: rgba(97, 166, 185, 0.3);
+  --calendar-border: theme(colors.neutral.500);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  @apply bg-background text-primary;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
