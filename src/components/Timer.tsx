@@ -100,11 +100,6 @@ const Timer: React.FC<TimerProps> = ({ seconds, setTimeHandler, onTimerEndHandle
       <span className=" font-medium">
         Времени осталось <b>{minutes} : {secs}</b>
       </span>
-      {!isRunning && shouldStart && (
-        <span className="text-sm text-orange-500 opacity-75">
-          (пауза)
-        </span>
-      )}
     </div>
   );
 };

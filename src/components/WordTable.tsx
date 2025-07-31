@@ -29,26 +29,26 @@ const WordTable: React.FC<WordTableProps> = ({ usedWords }) => {
   const renderCollapsedView = () => {
     return (
       <div 
-        className="relative w-full h-12 px-4 mb-5 py-2 rounded-lg border border-secondary bg-background  transition-colors cursor-pointer overflow-hidden"
+        className="relative w-full h-12 px-4 mb-5 py-2 rounded-lg border border-secondary bg-background transition-colors cursor-pointer overflow-hidden"
         onClick={toggleExpanded}
         ref={containerRef}
       >
         <div className="flex items-center h-full">
           <div className="flex-1 overflow-hidden">
-            {usedWords.size === 0 ? (
-              <span className="text-secondary text-sm">Начните составлять слова...</span>
-            ) : (
-              <div className="flex gap-2">
-                {visibleWords.map((word, index) => (
+            <div className="flex gap-2">
+              {usedWords.size === 0 ? (
+                <span className="text-secondary text-sm">Начните составлять слова...</span>
+              ) : (
+                visibleWords.map((word, index) => (
                   <span 
                     key={index} 
                     className="px-2 py-1 bg-background rounded text-sm font-medium whitespace-nowrap flex-shrink-0"
                   >
                     {word.charAt(0).toUpperCase() + word.slice(1)}
                   </span>
-                ))}
-              </div>
-            )}
+                ))
+              )}
+            </div>
           </div>
           <div className="ml-2">
             <span className="text-secondary">▼</span>
@@ -59,7 +59,7 @@ const WordTable: React.FC<WordTableProps> = ({ usedWords }) => {
   };
 
   const renderExpandedView = () => {
-    const wordsArray = Array.from(usedWords);
+    const wordsArray = Array.from(usedWords).sort(); // Sort words alphabetically
 
     return (
       <div 
@@ -67,20 +67,20 @@ const WordTable: React.FC<WordTableProps> = ({ usedWords }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-4 overflow-y-auto max-h-80">
-          {usedWords.size === 0 ? (
-            <p className="text-secondary text-center">Пока слов не найдено</p>
-          ) : (
-            <div className="">
-              {wordsArray.map((word, index) => (
+          <div className="">
+            {usedWords.size === 0 ? (
+              <p className="text-secondary text-center">Пока слов не найдено</p>
+            ) : (
+              wordsArray.map((word, index) => (
                 <div 
                   key={index}
-                  className="px-3 bg-background  rounded-lg transition-colors"
+                  className="px-3 bg-background rounded-lg transition-colors"
                 >
                   <span className="text-sm font-medium">{word.charAt(0).toUpperCase() + word.slice(1)}</span>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
       </div>
     );

@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Buttons from './Buttons';
 import WordTable from './WordTable';
-import Timer from './Timer';
 import { getRandomRussianWord, prepareRussianWord, getValidRussianWords, isRussianWordValid } from '@/utils/russianDictionary';
 
 interface GameProps {
@@ -214,13 +213,10 @@ const Game: React.FC<GameProps> = ({ wordLength, getData, setScore, setMaxPossib
     <div className=" mx-auto w-full ">
         <div className="text-center ">
           
-          {/* Timer Display - always centered */}
-          
-
           {/* Game Over Overlay */}
           {gameEnded && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-background p-8 rounded-lg text-center border border-primary">
+            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+              <div className="bg-background p-8 rounded-lg text-center ">
                 <h2 className="text-2xl font-bold mb-4 text-primary">Время вышло!</h2>
                 <p className="text-lg mb-2">Ваш финальный счёт: {currentScore}</p>
                 <p className="text-sm text-primary mb-4">
@@ -228,7 +224,7 @@ const Game: React.FC<GameProps> = ({ wordLength, getData, setScore, setMaxPossib
                 </p>
                 <button 
                   onClick={() => window.location.reload()} 
-                  className="px-6 py-2 bg-primary text-background rounded-lg hover:opacity-80"
+                  className="border border-primary rounded-full font-medium py-3 px-4 text-xs xxs:text-sm xs:text-base"
                 >
                   Играть снова
                 </button>
@@ -246,9 +242,7 @@ const Game: React.FC<GameProps> = ({ wordLength, getData, setScore, setMaxPossib
           </div>
         )}
 
-{gameStarted && usedWords.size > 0 && (
         <WordTable usedWords={usedWords} />
-      )}
 
         <div className="">
           <div className="text-center ">
@@ -286,6 +280,7 @@ const Game: React.FC<GameProps> = ({ wordLength, getData, setScore, setMaxPossib
             selectedLettersCount={selectedLetters.length}
             gameStarted={gameStarted}
             onStartGame={startGame}
+            onTimerEnd={() => setGameEnded(true)} // Pass the game-ending callback
           />
         </div>
       

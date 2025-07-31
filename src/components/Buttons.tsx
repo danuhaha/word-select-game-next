@@ -17,6 +17,7 @@ interface ButtonsProps {
   selectedLettersCount: number; // Add prop to track selected letters count
   gameStarted?: boolean; // New prop to control game state
   onStartGame?: () => void; // Callback for starting the game
+  onTimerEnd: () => void; // Callback for when the timer ends
 }
 
 const Buttons: React.FC<ButtonsProps> = ({
@@ -33,6 +34,7 @@ const Buttons: React.FC<ButtonsProps> = ({
   selectedLettersCount,
   gameStarted = true,
   onStartGame,
+  onTimerEnd,
 }) => {
   const [selectedLetters, setSelectedLetters] = useState<Set<number>>(new Set());
   const [usedLetterCounts, setUsedLetterCounts] = useState<Record<string, number>>({});
@@ -132,7 +134,7 @@ const Buttons: React.FC<ButtonsProps> = ({
           <Timer 
             seconds={420000} // 7 minutes in milliseconds
             setTimeHandler={() => {}} // Placeholder handler
-            onTimerEndHandler={() => {}} // Placeholder handler
+            onTimerEndHandler={onTimerEnd} // Use the passed callback
             shouldStart={gameStarted}
           />
         </div>
@@ -142,7 +144,7 @@ const Buttons: React.FC<ButtonsProps> = ({
         {!gameStarted ? (
           <button
             onClick={onStartGame}
-            className="border rounded-full font-medium py-3 px-4 text-xs xxs:text-sm xs:text-base"
+            className="border border-primary rounded-full font-medium py-3 px-4 text-xs xxs:text-sm xs:text-base"
           >
             Играть
           </button>
