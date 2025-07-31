@@ -1,55 +1,95 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 interface WordTableProps {
   usedWords: Set<string>;
 }
 
 const WordTable: React.FC<WordTableProps> = ({ usedWords }) => {
-  /** classify the words according to length and display
-   * @returns {JSX.Element} - returns JSX markup
-   */
-  const classifyLength = () => {
-    // Add safety check for usedWords
-    if (!usedWords || usedWords.size === 0) {
-      return (
-        <div className="text-center text-gray-400">
-          <p>Пока слов не найдено. Начните составлять слова!</p>
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [visibleWords, setVisibleWords] = useState<string[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateVisibleWords = () => {
+      const wordsArray = Array.from(usedWords);
+      setVisibleWords(wordsArray.reverse()); // Ensure new words appear on the left
+    };
+
+    updateVisibleWords();
+    window.addEventListener('resize', updateVisibleWords);
+    return () => window.removeEventListener('resize', updateVisibleWords);
+  }, [usedWords]);
+
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  const renderCollapsedView = () => {
+    return (
+      <div 
+        className="relative w-full h-12 px-4 mb-5 py-2 rounded-lg border border-secondary bg-background  transition-colors cursor-pointer overflow-hidden"
+        onClick={toggleExpanded}
+        ref={containerRef}
+      >
+        <div className="flex items-center h-full">
+          <div className="flex-1 overflow-hidden">
+            {usedWords.size === 0 ? (
+              <span className="text-secondary text-sm">Начните составлять слова...</span>
+            ) : (
+              <div className="flex gap-2">
+                {visibleWords.map((word, index) => (
+                  <span 
+                    key={index} 
+                    className="px-2 py-1 bg-background rounded text-sm font-medium whitespace-nowrap flex-shrink-0"
+                  >
+                    {word.charAt(0).toUpperCase() + word.slice(1)}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="ml-2">
+            <span className="text-secondary">▼</span>
+          </div>
         </div>
-      );
-    }
+      </div>
+    );
+  };
 
-    const wordsByLength: Record<number, string[]> = {};
-
-    usedWords.forEach((word) => {
-      const length = word.length;
-      if (!wordsByLength[length]) {
-        wordsByLength[length] = [];
-      }
-      wordsByLength[length].push(word);
-    });
+  const renderExpandedView = () => {
+    const wordsArray = Array.from(usedWords);
 
     return (
-      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {Object.keys(wordsByLength).map(length => (
-          <div key={length} className="p-3 rounded-lg shadow-lg transform transition-all bg-background">
-            <h2 className="text-lg font-bold mb-2 text-center text-primary">{length} букв</h2>
-            <ul className="space-y-1">
-              {wordsByLength[parseInt(length)].map((word, index) => (
-                <li key={index} className="px-2 py-1 rounded-md font-medium tracking-wide text-center capitalize transition-colors  text-sm bg-background">{word}</li>
+      <div 
+        className="absolute top-full left-0 z-50 mt-2 w-full bg-background border border-secondary rounded-lg shadow-lg max-h-96 overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-4 overflow-y-auto max-h-80">
+          {usedWords.size === 0 ? (
+            <p className="text-secondary text-center">Пока слов не найдено</p>
+          ) : (
+            <div className="">
+              {wordsArray.map((word, index) => (
+                <div 
+                  key={index}
+                  className="px-3 bg-background  rounded-lg transition-colors"
+                >
+                  <span className="text-sm font-medium">{word.charAt(0).toUpperCase() + word.slice(1)}</span>
+                </div>
               ))}
-            </ul>
-          </div>
-        ))}
+            </div>
+          )}
+        </div>
       </div>
     );
   };
 
   return (
-    <div className="mt-8 text-lg">
-      <h1 className="text-3xl font-bold mb-6 text-center text-primary">Ваши слова</h1>
-      {classifyLength()}
+    <div className="relative">
+      {renderCollapsedView()}
+      {isExpanded && renderExpandedView()}
     </div>
   );
 };

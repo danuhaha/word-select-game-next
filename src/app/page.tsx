@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import RussianGame from '@/components/RussianGame';
+import Game from '@/components/Game';
 import RankSystem from '@/components/RankSystem';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 
@@ -28,18 +28,25 @@ export default function Home() {
     <div className="min-h-screen bg-background text-primary">
       <ThemeSwitcher />
       <main>
-        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-          <div className="mb-4 sm:mb-6">
+      <div className='flex-1 flex flex-col items-center w-11/12 md:w-3/4 lg:w-7/12 mx-auto  relative'>
+          <div className='flex items-center my-4'>
+            <h1 className=' text-4xl font-semibold'>Слова</h1>
+          </div>
+
+          <div className="mb-5 mx-auto  w-full">
             <RankSystem score={score} maxPossibleScore={maxPossibleScore} />
           </div>
-        </div>
-        <RussianGame 
+          {/* <hr className=' border-cell-deselected mb-4 md:mb-4 w-full' /> */}
+          
+        <Game 
           key={key}
           wordLength={15}
           getData={getDataHandler}
           setScore={setScoreHandler}
           setMaxPossibleScore={setMaxPossibleScoreHandler}
         />
+        
+        </div>
       </main>
     </div>
   );

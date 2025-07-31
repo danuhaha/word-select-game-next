@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Timer from './Timer'; // Import Timer component
 
 interface ButtonsProps {
   jumbledWord: string[];
@@ -124,12 +125,24 @@ const Buttons: React.FC<ButtonsProps> = ({
           </button>
         ))}
       </div>
-      
+
+      {/* Timer positioned between letter buttons and control buttons */}
+      {gameStarted && (
+        <div className="mb-4 flex items-center justify-center">
+          <Timer 
+            seconds={420000} // 7 minutes in milliseconds
+            setTimeHandler={() => {}} // Placeholder handler
+            onTimerEndHandler={() => {}} // Placeholder handler
+            shouldStart={gameStarted}
+          />
+        </div>
+      )}
+
       <div className="flex flex-wrap justify-center gap-2">
         {!gameStarted ? (
           <button
             onClick={onStartGame}
-            className="px-3 sm:px-6 py-2 font-medium rounded-md transition-all border text-sm sm:text-base"
+            className="border rounded-full font-medium py-3 px-4 text-xs xxs:text-sm xs:text-base"
           >
             Играть
           </button>
@@ -138,7 +151,7 @@ const Buttons: React.FC<ButtonsProps> = ({
             <button
               onClick={onClearHandler}
               disabled={selectedLettersCount === 0}
-              className={`px-3 sm:px-6 py-2 font-medium rounded-md transition-all border text-sm sm:text-base ${
+              className={`border rounded-full font-medium py-3 px-4 text-xs xxs:text-sm xs:text-base ${
                 selectedLettersCount === 0 
                   ? 'cursor-not-allowed border-secondary text-secondary' 
                   : 'cursor-pointer border-primary text-primary'
@@ -149,7 +162,7 @@ const Buttons: React.FC<ButtonsProps> = ({
             <button
               onClick={backspaceHandler}
               disabled={selectedLettersCount === 0}
-              className={`px-3 sm:px-6 py-2 font-medium rounded-md transition-all border text-sm sm:text-base ${
+              className={`border rounded-full font-medium py-3 px-4 text-xs xxs:text-sm xs:text-base ${
                 selectedLettersCount === 0 
                   ? 'cursor-not-allowed border-secondary text-secondary' 
                   : 'cursor-pointer border-primary text-primary'
@@ -161,7 +174,7 @@ const Buttons: React.FC<ButtonsProps> = ({
             <button
               onClick={submitHandler}
               disabled={selectedLettersCount < 4}
-              className={`px-3 sm:px-6 py-2 font-medium rounded-md transition-all text-sm border sm:text-base ${
+              className={`border rounded-full font-medium py-3 px-4 text-xs xxs:text-sm xs:text-base ${
                 selectedLettersCount < 4 
                   ? 'cursor-not-allowed bg-background text-maincolormuted border-maincolormuted' 
                   : 'cursor-pointer bg-maincolor text-lettertext border-maincolor'

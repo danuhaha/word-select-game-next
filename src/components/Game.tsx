@@ -13,7 +13,7 @@ interface GameProps {
   setMaxPossibleScore: (maxScore: number) => void;
 }
 
-const RussianGame: React.FC<GameProps> = ({ wordLength, getData, setScore, setMaxPossibleScore }) => {
+const Game: React.FC<GameProps> = ({ wordLength, getData, setScore, setMaxPossibleScore }) => {
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [jumbledWord, setJumbledWord] = useState<string[]>([]);
   const [validWords, setValidWords] = useState<Set<string>>(new Set());
@@ -211,20 +211,11 @@ const RussianGame: React.FC<GameProps> = ({ wordLength, getData, setScore, setMa
   }, [jumbledWord, selectedIndices, letterCounts, setSelectedHandler, backspaceHandler, submitHandler, clearSelectedHandler]);
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-      <div className=" bg-background rounded-lg p-3 sm:p-6 shadow-lg relative">
-        <div className="text-center mb-4 sm:mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-primary">Слова</h1>
+    <div className=" mx-auto w-full ">
+        <div className="text-center ">
           
           {/* Timer Display - always centered */}
-          <div className="mb-4 flex items-center justify-center">
-            <Timer 
-              seconds={420000} // 7 minutes in milliseconds
-              setTimeHandler={setTimeHandler}
-              onTimerEndHandler={onTimerEnd}
-              shouldStart={gameStarted}
-            />
-          </div>
+          
 
           {/* Game Over Overlay */}
           {gameEnded && (
@@ -255,14 +246,18 @@ const RussianGame: React.FC<GameProps> = ({ wordLength, getData, setScore, setMa
           </div>
         )}
 
-        <div className="mb-6">
-          <div className="text-center mb-4">
-            <div className="flex justify-center gap-1 sm:gap-2 flex-wrap min-h-[2rem] px-2">
+{gameStarted && usedWords.size > 0 && (
+        <WordTable usedWords={usedWords} />
+      )}
+
+        <div className="">
+          <div className="text-center ">
+            <div className="flex justify-center gap-1 sm:gap-2 flex-wrap min-h-[2rem] px-2 mb-7 mt-2">
               {selectedLetters.length > 0 ? (
                 selectedLetters.map((letter, index) => (
                     <span
                     key={index}
-                    className="inline-block w-6 h-6 sm:w-8 sm:h-8 rounded-md font-bold text-sm sm:text-base flex items-center justify-center bg-maincolor text-lettertext"
+                    className=" w-6 h-6 sm:w-8 sm:h-8 rounded-md font-bold text-sm sm:text-base flex items-center justify-center bg-maincolor text-lettertext"
                     >
                     {letter ? letter.toUpperCase() : ''}
                     </span>
@@ -273,6 +268,8 @@ const RussianGame: React.FC<GameProps> = ({ wordLength, getData, setScore, setMa
             </div>
           </div>
         </div>
+
+        
 
         {/* Disable interactions when game has ended */}
         <div className={gameEnded ? 'pointer-events-none opacity-50' : ''}>
@@ -291,12 +288,9 @@ const RussianGame: React.FC<GameProps> = ({ wordLength, getData, setScore, setMa
             onStartGame={startGame}
           />
         </div>
-      </div>
-      {gameStarted && usedWords.size > 0 && (
-        <WordTable usedWords={usedWords} />
-      )}
+      
     </div>
   );
 };
 
-export default RussianGame;
+export default Game;

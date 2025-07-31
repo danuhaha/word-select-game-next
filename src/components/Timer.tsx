@@ -97,8 +97,8 @@ const Timer: React.FC<TimerProps> = ({ seconds, setTimeHandler, onTimerEndHandle
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xl font-medium">
-        {minutes} : {secs}
+      <span className=" font-medium">
+        Времени осталось <b>{minutes} : {secs}</b>
       </span>
       {!isRunning && shouldStart && (
         <span className="text-sm text-orange-500 opacity-75">
