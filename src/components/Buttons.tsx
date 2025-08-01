@@ -166,7 +166,7 @@ const Buttons: React.FC<ButtonsProps> = ({
 
       <div className={`mb-4 flex items-center justify-center ${!gameStarted ? 'invisible' : ''}`}>
         <Timer
-          seconds={5000} // 7 minutes in milliseconds
+          seconds={420000} // 7 minutes in milliseconds
           setTimeHandler={() => {}} // Placeholder handler
           onTimerEndHandler={handleTimerEnd} // Use local handler
           shouldStart={gameStarted && !timerEnded}
