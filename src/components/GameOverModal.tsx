@@ -11,10 +11,13 @@ export const GameOverModal = (props: GameOverModalProps) => {
   const validWordsArr = Array.from(props.validWords);
   // Exclude the initial word (first in validWordsArr)
   const initialWord = validWordsArr[0];
-  const unusedWords = validWordsArr
-    .filter((word) => word !== initialWord && !props.usedWords.has(word))
-    .sort((a, b) => b.length - a.length)
-    .slice(0, 10);
+  // Shuffle unused words and select 30 random ones
+  const shuffledUnused = [...validWordsArr].filter((word) => word !== initialWord && !props.usedWords.has(word));
+  for (let i = shuffledUnused.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledUnused[i], shuffledUnused[j]] = [shuffledUnused[j], shuffledUnused[i]];
+  }
+  const unusedWords = shuffledUnused.slice(0, 30);
 
   return (
     <div className='rounded-lg bg-background text-center'>
@@ -26,20 +29,21 @@ export const GameOverModal = (props: GameOverModalProps) => {
         Найдено слов: {usedWordsArr.length} из {validWordsArr.length}
       </p>
       <div className='mb-4'>
-        <h3 className='mb-2 text-lg font-semibold'>Ваши слова:</h3>
-        <ul className='mb-2 text-sm'>
-          {usedWordsArr.slice(0, 10).map((word, idx) => (
-            <li key={word + idx}>{word}</li>
-          ))}
-          <span>...</span>
-        </ul>
         <h3 className='mb-2 text-lg font-semibold'>Пропущенные слова:</h3>
-        <ul className='text-sm text-secondary'>
-          {unusedWords.map((word, idx) => (
-            <li key={word + idx}>{word}</li>
+        <div className='flex flex-row justify-center gap-2'>
+          {[0, 1, 2].map((col) => (
+            <ul
+              className='text-sm text-secondary'
+              key={col}
+            >
+              {unusedWords
+                .filter((_, idx) => Math.floor(idx / 10) === col)
+                .map((word, idx) => (
+                  <li key={word + idx}>{word}</li>
+                ))}
+            </ul>
           ))}
-          <span>...</span>
-        </ul>
+        </div>
       </div>
       <button
         onClick={() => window.location.reload()}

@@ -1,11 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import Buttons from './Buttons';
 import WordTable from './WordTable';
 import { getRandomRussianWord, prepareRussianWord, getValidRussianWords, isRussianWordValid, getRussianWords } from '@/utils/russianDictionary';
 import { Modal, useModal } from './Modal';
 import { GameOverModal } from './GameOverModal';
+import ControlButtons from './ControlButtons';
+import PlayButton from './PlayButton';
+import Timer from './Timer';
+import LetterButtons from './LetterButtons';
 
 interface GameProps {
   wordLength: number;
@@ -24,7 +27,7 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore }) =
   const [error, setError] = useState<string | null>(null);
   const [letterCounts, setLetterCounts] = useState<Record<string, number>>({});
   const [currentScore, setCurrentScore] = useState<number>(0);
-  const [buttonResetTrigger, setButtonResetTrigger] = useState<number>(0);
+  const [, setButtonResetTrigger] = useState<number>(0);
   const [, setMaxPossibleScoreState] = useState<number>(0);
   const [gameEnded, setGameEnded] = useState<boolean>(false);
   const [gameStarted, setGameStarted] = useState<boolean>(false);
@@ -203,11 +206,14 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore }) =
           validWords={validWords}
         />
       );
+      setSelectedLetters([]);
+      setSelectedIndices([]);
     }
-  }, [currentScore, gameEnded, showModal, usedWords.size, validWords.size]);
+  }, [currentScore, gameEnded, showModal, usedWords, usedWords.size, validWords, validWords.size]);
 
   // Keyboard event handler
   useEffect(() => {
+    if (gameEnded) return; // Disable keyboard input when game is ended
     const handleKeyDown = (event: KeyboardEvent) => {
       // Prevent default behavior for handled keys
       const key = event.key.toLowerCase();
@@ -256,7 +262,7 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore }) =
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [jumbledWord, selectedIndices, letterCounts, setSelectedHandler, backspaceHandler, submitHandler, clearSelectedHandler]);
+  }, [jumbledWord, selectedIndices, letterCounts, setSelectedHandler, backspaceHandler, submitHandler, clearSelectedHandler, gameEnded]);
 
   return (
     <div className='mx-auto w-full'>
@@ -290,25 +296,64 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore }) =
           </div>
         </div>
       </div>
-
-      {/* Disable interactions when game has ended */}
-      <div className={gameEnded ? 'pointer-events-none opacity-50' : ''}>
-        <Buttons
+      <div className={`${gameEnded ? 'pointer-events-none opacity-50' : ''}`}>
+        <LetterButtons
           jumbledWord={jumbledWord}
-          setSelectedHandler={setSelectedHandler}
-          clearError={clearError}
-          clearSelectedHandler={clearSelectedHandler}
-          submitHandler={submitHandler}
-          backspaceHandler={backspaceHandler}
-          letterCounts={letterCounts}
           selectedIndices={selectedIndices}
-          resetTrigger={buttonResetTrigger}
-          selectedLettersCount={selectedLetters.length}
+          setSelectedHandler={setSelectedHandler}
+          letterCounts={letterCounts}
+          clearError={clearError}
           gameStarted={gameStarted}
-          onStartGame={startGame}
-          onTimerEnd={() => setGameEnded(true)} // Pass the game-ending callback
         />
+
+        {/* Timer always visible when game started and not ended */}
+        <div className={`mb-4 flex items-center justify-center ${!gameStarted ? 'invisible' : ''}`}>
+          <Timer
+            seconds={420000}
+            setTimeHandler={() => {}}
+            onTimerEndHandler={() => setGameEnded(true)}
+            shouldStart={gameStarted && !gameEnded}
+          />
+        </div>
       </div>
+
+      {/* Play button before game starts */}
+      {!gameStarted && !gameEnded && (
+        <div className='mb-4 flex justify-center'>
+          <PlayButton onStart={startGame} />
+        </div>
+      )}
+      {/* Control buttons during game */}
+      {gameStarted && !gameEnded && (
+        <ControlButtons
+          onClear={clearSelectedHandler}
+          onBackspace={backspaceHandler}
+          onSubmit={submitHandler}
+          selectedLettersCount={selectedLetters.length}
+        />
+      )}
+      {/* Letter buttons during game */}
+
+      {/* Play again button after game ends */}
+
+      {gameEnded && (
+        <div className='mb-4 flex justify-center'>
+          <button
+            onClick={() => {
+              showModal(
+                <GameOverModal
+                  score={currentScore}
+                  usedWords={usedWords}
+                  validWords={validWords}
+                />
+              );
+            }}
+            className='rounded-full border border-primary px-4 py-3 text-xs font-medium xxs:text-sm xs:text-base'
+          >
+            Показать результаты
+          </button>
+        </div>
+      )}
     </div>
   );
 };

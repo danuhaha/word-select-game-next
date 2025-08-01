@@ -38,20 +38,28 @@ const WordTable: React.FC<WordTableProps> = ({ usedWords }) => {
       >
         <div className='flex h-full items-center'>
           <div className='flex-1 overflow-hidden'>
-            <div className='flex gap-1'>
-              {usedWords.size === 0 ? (
-                <span className='text-sm text-secondary'>Начните составлять слова...</span>
-              ) : (
-                visibleWords.map((word, index) => (
-                  <span
-                    key={index}
-                    className='flex-shrink-0 whitespace-nowrap rounded bg-background px-2 py-1 text-sm font-medium'
-                  >
-                    {word.charAt(0).toUpperCase() + word.slice(1)}
-                  </span>
-                ))
-              )}
-            </div>
+            {isExpanded && usedWords.size !== 0 ? (
+              <div className='flex gap-1'>
+                <span className='px-2 text-sm font-medium text-primary'>
+                  Вы нашли {usedWords.size} {getWordDeclension(usedWords.size)}
+                </span>
+              </div>
+            ) : (
+              <div className='flex gap-1'>
+                {usedWords.size === 0 ? (
+                  <span className='px-2 text-sm text-secondary'>Начните составлять слова...</span>
+                ) : (
+                  visibleWords.map((word, index) => (
+                    <span
+                      key={index}
+                      className='flex-shrink-0 whitespace-nowrap rounded bg-background px-2 py-1 text-sm font-medium'
+                    >
+                      {word.charAt(0).toUpperCase() + word.slice(1)}
+                    </span>
+                  ))
+                )}
+              </div>
+            )}
           </div>
           <div className='ml-2'>
             <IoIosArrowDown className={`text-secondary transition-transform duration-300 ${isExpanded ? 'rotate-180' : 'rotate-0'}`} />
@@ -129,6 +137,15 @@ const WordTable: React.FC<WordTableProps> = ({ usedWords }) => {
         </div>
       </div>
     );
+  };
+
+  // Helper for Russian word declension
+  const getWordDeclension = (count: number) => {
+    const lastDigit = count % 10;
+    const lastTwoDigits = count % 100;
+    if (lastDigit === 1 && lastTwoDigits !== 11) return 'слово';
+    if ([2, 3, 4].includes(lastDigit) && ![12, 13, 14].includes(lastTwoDigits)) return 'слова';
+    return 'слов';
   };
 
   return (
