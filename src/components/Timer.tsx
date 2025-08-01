@@ -10,7 +10,7 @@ interface TimerProps {
 
 const Timer: React.FC<TimerProps> = ({ seconds, setTimeHandler, onTimerEndHandler, shouldStart = true }) => {
   const [timeLeft, setTimeLeft] = useState(seconds);
-  const [isRunning, setIsRunning] = useState(false); // Start as false
+  const [, setIsRunning] = useState(false); // Start as false
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastTickRef = useRef<number>(Date.now());
 
@@ -20,27 +20,27 @@ const Timer: React.FC<TimerProps> = ({ seconds, setTimeHandler, onTimerEndHandle
     const seconds = totalSeconds % 60;
     return {
       minutes: minutes < 10 ? `0${minutes}` : minutes.toString(),
-      seconds: seconds < 10 ? `0${seconds}` : seconds.toString()
+      seconds: seconds < 10 ? `0${seconds}` : seconds.toString(),
     };
   }, []);
 
   const tick = useCallback(() => {
-    setTimeLeft(prev => {
+    setTimeLeft((prev) => {
       const newTime = Math.max(0, prev - 1000);
       setTimeHandler({ total: newTime });
-      
-      if (newTime <= 0) {
-        onTimerEndHandler();
-        return 0;
-      }
-      
       return newTime;
     });
-  }, [setTimeHandler, onTimerEndHandler]);
+  }, [setTimeHandler]);
+
+  useEffect(() => {
+    if (timeLeft === 0) {
+      onTimerEndHandler();
+    }
+  }, [timeLeft, onTimerEndHandler]);
 
   const startTimer = useCallback(() => {
     if (intervalRef.current) return;
-    
+
     intervalRef.current = setInterval(tick, 1000);
     lastTickRef.current = Date.now();
   }, [tick]);
@@ -69,7 +69,7 @@ const Timer: React.FC<TimerProps> = ({ seconds, setTimeHandler, onTimerEndHandle
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
@@ -96,9 +96,12 @@ const Timer: React.FC<TimerProps> = ({ seconds, setTimeHandler, onTimerEndHandle
   const { minutes, seconds: secs } = formatTime(timeLeft);
 
   return (
-    <div className="flex items-center gap-2">
-      <span className=" font-medium">
-        Времени осталось <b>{minutes} : {secs}</b>
+    <div className='flex items-center gap-2'>
+      <span className=' '>
+        Времени осталось{' '}
+        <b>
+          {minutes} : {secs}
+        </b>
       </span>
     </div>
   );

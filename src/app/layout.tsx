@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
 import { Roboto } from 'next/font/google';
-import ThemeProvider from "@/components/ThemeProvider";
-import "./globals.css";
+import ThemeProvider from '@/components/ThemeProvider';
+import './globals.css';
+import React from 'react';
 
 const roboto = Roboto({
   subsets: ['latin', 'cyrillic'], // Include Cyrillic subset for Russian
@@ -9,8 +10,8 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Word Select Game",
-  description: "A word game where you find words within a jumbled word",
+  title: 'Word Select Game',
+  description: 'A word game where you find words within a jumbled word',
 };
 
 export default function RootLayout({
@@ -19,13 +20,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={roboto.className}
-      >
+    <html
+      lang='en'
+      suppressHydrationWarning
+    >
+      <body className={roboto.className}>
         <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
+          attribute='class'
+          defaultTheme='system'
           enableSystem
           disableTransitionOnChange
         >

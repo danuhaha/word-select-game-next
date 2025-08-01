@@ -1,22 +1,18 @@
-import type { Config } from "tailwindcss";
+import type { Config } from 'tailwindcss';
 
 const config: Config = {
-  content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
-  darkMode: "class",
+  content: ['./src/pages/**/*.{js,ts,jsx,tsx,mdx}', './src/components/**/*.{js,ts,jsx,tsx,mdx}', './src/app/**/*.{js,ts,jsx,tsx,mdx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        primary: "var(--primary)",
-        secondary: "var(--secondary)",
-        lettertext: "var(--lettertext)",
-        maincolor: "var(--maincolor)",
-        maincolormuted: "var(--maincolormuted)",
-        streak: "var(--streak)",
+        background: 'var(--background)',
+        primary: 'var(--primary)',
+        secondary: 'var(--secondary)',
+        lettertext: 'var(--lettertext)',
+        maincolor: 'var(--maincolor)',
+        maincolormuted: 'var(--maincolormuted)',
+        streak: 'var(--streak)',
         button: {
           clickable: 'var(--button-clickable)',
           unclickable: 'var(--button-unclickable)',
@@ -38,29 +34,29 @@ const config: Config = {
         },
       },
       screens: {
-        "xs": "440px",
-        "xxs": "380px",
-        "xxxs": "340px",
-        "3xl": "1800px",
+        xs: '440px',
+        xxs: '380px',
+        xxxs: '340px',
+        '3xl': '1800px',
       },
       fontSize: {
-        "xxs": "10px",
-        "xxxs": "8px",
-        "l": "19px",
+        xxs: '10px',
+        xxxs: '8px',
+        l: '19px',
       },
       animation: {
-        "horizontal-shake": "horizontal-shake 0.2s ease-in-out infinite",
+        'horizontal-shake': 'horizontal-shake 0.2s ease-in-out infinite',
       },
       keyframes: {
-        "horizontal-shake": {
-          "0%, 50%, 100%": {
-            transform: "translateX(0)",
+        'horizontal-shake': {
+          '0%, 50%, 100%': {
+            transform: 'translateX(0)',
           },
-          "25%": {
-            transform: "translateX(-5px)",
+          '25%': {
+            transform: 'translateX(-5px)',
           },
-          "75%": {
-            transform: "translateX(5px)",
+          '75%': {
+            transform: 'translateX(5px)',
           },
         },
       },

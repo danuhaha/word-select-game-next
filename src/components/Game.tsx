@@ -3,7 +3,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Buttons from './Buttons';
 import WordTable from './WordTable';
-import { getRandomRussianWord, prepareRussianWord, getValidRussianWords, isRussianWordValid } from '@/utils/russianDictionary';
+import { getRandomRussianWord, prepareRussianWord, getValidRussianWords, isRussianWordValid, getRussianWords } from '@/utils/russianDictionary';
+import { Modal, useModal } from './Modal';
+import { GameOverModal } from './GameOverModal';
 
 interface GameProps {
   wordLength: number;
@@ -12,7 +14,7 @@ interface GameProps {
   setMaxPossibleScore: (maxScore: number) => void;
 }
 
-const Game: React.FC<GameProps> = ({ wordLength, getData, setScore, setMaxPossibleScore }) => {
+const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore }) => {
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [jumbledWord, setJumbledWord] = useState<string[]>([]);
   const [validWords, setValidWords] = useState<Set<string>>(new Set());
@@ -23,9 +25,10 @@ const Game: React.FC<GameProps> = ({ wordLength, getData, setScore, setMaxPossib
   const [letterCounts, setLetterCounts] = useState<Record<string, number>>({});
   const [currentScore, setCurrentScore] = useState<number>(0);
   const [buttonResetTrigger, setButtonResetTrigger] = useState<number>(0);
-  const [maxPossibleScore, setMaxPossibleScoreState] = useState<number>(0);
+  const [, setMaxPossibleScoreState] = useState<number>(0);
   const [gameEnded, setGameEnded] = useState<boolean>(false);
   const [gameStarted, setGameStarted] = useState<boolean>(false);
+  const [dialogProps, showModal] = useModal();
 
   // Auto-clear error after 5 seconds
   useEffect(() => {
@@ -59,50 +62,83 @@ const Game: React.FC<GameProps> = ({ wordLength, getData, setScore, setMaxPossib
     return length; // 5+ letters: 1 point per letter
   }, []);
 
-  const calculateMaxPossibleScore = useCallback((words: Set<string>): number => {
-    let totalScore = 0;
-    words.forEach(word => {
-      if (word.length >= 4) { // Only count words 4+ letters long
-        totalScore += calculateScore(word);
-      }
-    });
-    return totalScore;
-  }, [calculateScore]);
+  const calculateMaxPossibleScore = useCallback(
+    (words: Set<string>): number => {
+      let totalScore = 0;
+      words.forEach((word) => {
+        if (word.length >= 4) {
+          // Only count words 4+ letters long
+          totalScore += calculateScore(word);
+        }
+      });
+      return totalScore;
+    },
+    [calculateScore]
+  );
 
-  const selectWord = useCallback((minLength: number) => {
-    const word = getRandomRussianWord(minLength);
-    setSelectedWord(word);
-    prepareWord(word, (prepared) => {
-      const valid = getValidRussianWords(word);
-      setValidWords(valid);
-      const maxScore = calculateMaxPossibleScore(valid);
-      setMaxPossibleScore(maxScore);
-      setMaxPossibleScoreState(maxScore); // Pass to parent component
-      getData(Array.from(valid));
-    });
-  }, [calculateMaxPossibleScore, getData, setMaxPossibleScore, prepareWord]);
+  const selectWord = useCallback(
+    (minLength: number, minValidWords: number = 500) => {
+      const allWords = getRussianWords();
+      // Filter out words with dashes and apply minimum length requirement
+      const filteredWords = allWords.filter((word: string) => word.length >= minLength && !word.includes('-'));
+      // Shuffle filteredWords for randomness
+      for (let i = filteredWords.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [filteredWords[i], filteredWords[j]] = [filteredWords[j], filteredWords[i]];
+      }
+      let selected = null;
+      let valid = new Set<string>();
+      for (const word of filteredWords) {
+        const possibleWords = getValidRussianWords(word);
+        // Exclude the original word from the count
+        const possibleCount = Array.from(possibleWords).filter((w: string) => w !== word.toLowerCase()).length;
+        if (possibleCount >= minValidWords) {
+          selected = word;
+          valid = possibleWords as Set<string>;
+          break;
+        }
+      }
+      // Fallback: just pick a random word if none found
+      if (!selected) {
+        selected = getRandomRussianWord(minLength);
+        valid = getValidRussianWords(selected) as Set<string>;
+      }
+      setSelectedWord(selected);
+      prepareWord(selected, () => {
+        setValidWords(valid);
+        const maxScore = calculateMaxPossibleScore(valid);
+        setMaxPossibleScore(maxScore);
+        setMaxPossibleScoreState(maxScore); // Pass to parent component
+        getData(Array.from(valid) as string[]);
+      });
+    },
+    [calculateMaxPossibleScore, getData, setMaxPossibleScore, prepareWord]
+  );
 
   useEffect(() => {
-    selectWord(15); // Ensure the word is at least 15 letters long
+    selectWord(15, 500); // Ensure the word is at least 15 letters and 500 possible words
   }, []); // Empty dependency array to run only once on mount
 
   useEffect(() => {
     setScore(currentScore);
   }, [currentScore, setScore]);
 
-  const setSelectedHandler = useCallback((index: number) => {
-    if (jumbledWord && jumbledWord[index]) {
-      const letter = jumbledWord[index];
-      setSelectedLetters((prev) => [...prev, letter]);
-      setSelectedIndices((prev) => [...prev, index]);
-    }
-  }, [jumbledWord]);
+  const setSelectedHandler = useCallback(
+    (index: number) => {
+      if (jumbledWord && jumbledWord[index]) {
+        const letter = jumbledWord[index];
+        setSelectedLetters((prev) => [...prev, letter]);
+        setSelectedIndices((prev) => [...prev, index]);
+      }
+    },
+    [jumbledWord]
+  );
 
   const clearSelectedHandler = useCallback(() => {
     setSelectedLetters([]);
     setSelectedIndices([]);
     // Force Buttons component to reset its internal state
-    setButtonResetTrigger(prev => prev + 1);
+    setButtonResetTrigger((prev) => prev + 1);
   }, []);
 
   const clearError = useCallback(() => {
@@ -125,6 +161,10 @@ const Game: React.FC<GameProps> = ({ wordLength, getData, setScore, setMaxPossib
       return;
     }
 
+    if (word === selectedWord) {
+      setError('Нельзя использовать исходное слово');
+      return;
+    }
     if (isRussianWordValid(word, validWords)) {
       setUsedWords((prev) => new Set([...prev, word]));
       setCurrentScore((prev) => prev + calculateScore(word));
@@ -132,7 +172,7 @@ const Game: React.FC<GameProps> = ({ wordLength, getData, setScore, setMaxPossib
     } else {
       setError('Недопустимое слово');
     }
-  }, [selectedLetters, usedWords, validWords, clearSelectedHandler, calculateScore]);
+  }, [selectedLetters, clearSelectedHandler, usedWords, selectedWord, validWords, clearError, calculateScore]);
 
   const backspaceHandler = useCallback(() => {
     if (selectedLetters.length > 0) {
@@ -144,25 +184,34 @@ const Game: React.FC<GameProps> = ({ wordLength, getData, setScore, setMaxPossib
       setSelectedIndices(newSelectedIndices);
     }
   }, [selectedLetters, selectedIndices]);
-
-  const onTimerEnd = useCallback(() => {
+  useCallback(() => {
     setGameEnded(true);
   }, []);
-
-  const setTimeHandler = useCallback((data: { total: number }) => {
+  useCallback(() => {
     // Optional: Handle timer tick events if needed
   }, []);
-
   const startGame = useCallback(() => {
     setGameStarted(true);
   }, []);
+
+  useEffect(() => {
+    if (gameEnded) {
+      showModal(
+        <GameOverModal
+          score={currentScore}
+          usedWords={usedWords}
+          validWords={validWords}
+        />
+      );
+    }
+  }, [currentScore, gameEnded, showModal, usedWords.size, validWords.size]);
 
   // Keyboard event handler
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Prevent default behavior for handled keys
       const key = event.key.toLowerCase();
-      
+
       if (key === 'backspace') {
         event.preventDefault();
         backspaceHandler();
@@ -172,13 +221,13 @@ const Game: React.FC<GameProps> = ({ wordLength, getData, setScore, setMaxPossib
       // Check if the pressed key corresponds to any available letter
       if (key.match(/^[а-яё]$/)) {
         event.preventDefault();
-        
+
         // Find the first available button with this letter
         for (let i = 0; i < jumbledWord.length; i++) {
           const letter = jumbledWord[i].toLowerCase();
           if (letter === key && !selectedIndices.includes(i)) {
             // Check if this letter is still available based on counts
-            const currentCount = selectedIndices.filter(idx => jumbledWord[idx].toLowerCase() === letter).length;
+            const currentCount = selectedIndices.filter((idx) => jumbledWord[idx].toLowerCase() === letter).length;
             if (currentCount < letterCounts[letter]) {
               setSelectedHandler(i);
               break;
@@ -210,80 +259,56 @@ const Game: React.FC<GameProps> = ({ wordLength, getData, setScore, setMaxPossib
   }, [jumbledWord, selectedIndices, letterCounts, setSelectedHandler, backspaceHandler, submitHandler, clearSelectedHandler]);
 
   return (
-    <div className=" mx-auto w-full ">
-        <div className="text-center ">
-          
-          {/* Game Over Overlay */}
-          {gameEnded && (
-            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-              <div className="bg-background p-8 rounded-lg text-center ">
-                <h2 className="text-2xl font-bold mb-4 text-primary">Время вышло!</h2>
-                <p className="text-lg mb-2">Ваш финальный счёт: {currentScore}</p>
-                <p className="text-sm text-primary mb-4">
-                  Найдено слов: {usedWords.size} из {validWords.size}
-                </p>
-                <button 
-                  onClick={() => window.location.reload()} 
-                  className="border border-primary rounded-full font-medium py-3 px-4 text-xs xxs:text-sm xs:text-base"
+    <div className='mx-auto w-full'>
+      <Modal {...dialogProps} />
+      {/* Error popup - positioned absolutely */}
+      {error && (
+        <div className='fixed left-1/2 top-4 z-50 -translate-x-1/2 transform'>
+          <div className='rounded-lg border border-primary bg-background px-6 py-3 shadow-lg'>
+            <p className='font-medium text-primary'>{error}</p>
+          </div>
+        </div>
+      )}
+
+      <WordTable usedWords={usedWords} />
+
+      <div className=''>
+        <div className='text-center'>
+          <div className='mb-8 mt-8 flex min-h-[2rem] flex-wrap justify-center gap-1 px-2 sm:gap-2'>
+            {selectedLetters.length > 0 ? (
+              selectedLetters.map((letter, index) => (
+                <span
+                  key={index}
+                  className='flex h-6 w-6 items-center justify-center rounded-md bg-maincolor text-sm font-bold text-lettertext sm:h-8 sm:w-8 sm:text-base'
                 >
-                  Играть снова
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Error popup - positioned absolutely */}
-        {error && (
-          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-            <div className="px-6 py-3 border rounded-lg shadow-lg bg-background border-primary">
-              <p className="text-primary font-medium">{error}</p>
-            </div>
-          </div>
-        )}
-
-        <WordTable usedWords={usedWords} />
-
-        <div className="">
-          <div className="text-center ">
-            <div className="flex justify-center gap-1 sm:gap-2 flex-wrap min-h-[2rem] px-2 mb-7 mt-2">
-              {selectedLetters.length > 0 ? (
-                selectedLetters.map((letter, index) => (
-                    <span
-                    key={index}
-                    className=" w-6 h-6 sm:w-8 sm:h-8 rounded-md font-bold text-sm sm:text-base flex items-center justify-center bg-maincolor text-lettertext"
-                    >
-                    {letter ? letter.toUpperCase() : ''}
-                    </span>
-                ))
-              ) : (
-                <span className="italic text-sm sm:text-base text-primary">Выберите буквы для составления слова</span>
-              )}
-            </div>
+                  {letter ? letter.toUpperCase() : ''}
+                </span>
+              ))
+            ) : (
+              <span className='py-1 text-sm text-secondary sm:text-base'>Введите слово</span>
+            )}
           </div>
         </div>
+      </div>
 
-        
-
-        {/* Disable interactions when game has ended */}
-        <div className={gameEnded ? 'pointer-events-none opacity-50' : ''}>
-          <Buttons
-            jumbledWord={jumbledWord}
-            setSelectedHandler={setSelectedHandler}
-            clearError={clearError}
-            clearSelectedHandler={clearSelectedHandler}
-            submitHandler={submitHandler}
-            backspaceHandler={backspaceHandler}
-            letterCounts={letterCounts}
-            selectedIndices={selectedIndices}
-            resetTrigger={buttonResetTrigger}
-            selectedLettersCount={selectedLetters.length}
-            gameStarted={gameStarted}
-            onStartGame={startGame}
-            onTimerEnd={() => setGameEnded(true)} // Pass the game-ending callback
-          />
-        </div>
-      
+      {/* Disable interactions when game has ended */}
+      <div className={gameEnded ? 'pointer-events-none opacity-50' : ''}>
+        <Buttons
+          jumbledWord={jumbledWord}
+          setSelectedHandler={setSelectedHandler}
+          clearError={clearError}
+          clearSelectedHandler={clearSelectedHandler}
+          submitHandler={submitHandler}
+          backspaceHandler={backspaceHandler}
+          letterCounts={letterCounts}
+          selectedIndices={selectedIndices}
+          resetTrigger={buttonResetTrigger}
+          selectedLettersCount={selectedLetters.length}
+          gameStarted={gameStarted}
+          onStartGame={startGame}
+          onTimerEnd={() => setGameEnded(true)} // Pass the game-ending callback
+        />
+      </div>
     </div>
   );
 };

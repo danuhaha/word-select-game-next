@@ -3,57 +3,57 @@
 @tailwind utilities;
 
 :root {
-  /* Light theme as default */
-  --primary: theme(colors.black);
-  --secondary: theme(colors.stone.400);
-  --background: #faf9f6;
-  --lettertext: theme(colors.black);
-  --maincolor: #ffb7ba;
-  --maincolormuted: #f7c2c4;
-  --streak: #FFA500;
+    /* Light theme as default */
+    --primary: theme(colors.black);
+    --secondary: theme(colors.stone.400);
+    --background: #faf9f6;
+    --lettertext: theme(colors.black);
+    --maincolor: #ffb7ba;
+    --maincolormuted: #f7c2c4;
+    --streak: #FFA500;
 
-  --cell-selected: theme(colors.stone.500);
-  --cell-deselected: theme(colors.stone.200);
+    --cell-selected: theme(colors.stone.500);
+    --cell-deselected: theme(colors.stone.200);
 
-  --skeleton-1: theme(colors.stone.200);
-  --skeleton-2: #faf9f6;
-  --skeleton-3: theme(colors.stone.200);
+    --skeleton-1: theme(colors.stone.200);
+    --skeleton-2: #faf9f6;
+    --skeleton-3: theme(colors.stone.200);
 
-  --celltext-selected: theme(colors.stone.100);
-  --celltext-deselected: theme(colors.black);
+    --celltext-selected: theme(colors.stone.100);
+    --celltext-deselected: theme(colors.black);
 
-  --calendar-background-started: rgba(138, 198, 209, 0.3);
-  --calendar-border: theme(colors.stone.400);
+    --calendar-background-started: rgba(138, 198, 209, 0.3);
+    --calendar-border: theme(colors.stone.400);
 }
 
 .dark {
-  /* Dark theme overrides */
-  --primary: theme(colors.neutral.200);
-  --secondary: theme(colors.neutral.500);
-  --background: #1e1e1e;
-  --lettertext:  #1e1e1e;
-  --maincolor: #f8aaaa;
-  --maincolormuted: #e3c1c1;
-  --streak: #FF8C00;
+    /* Dark theme overrides */
+    --primary: theme(colors.neutral.200);
+    --secondary: theme(colors.neutral.500);
+    --background: #1e1e1e;
+    --lettertext: #1e1e1e;
+    --maincolor: #f8aaaa;
+    --maincolormuted: #e3c1c1;
+    --streak: #FF8C00;
 
-  --cell-selected: theme(colors.neutral.400);
-  --cell-deselected: theme(colors.neutral.700);
+    --cell-selected: theme(colors.neutral.400);
+    --cell-deselected: theme(colors.neutral.700);
 
-  --skeleton-1: theme(colors.neutral.700);
-  --skeleton-2: #1e1e1e;
-  --skeleton-3: theme(colors.neutral.700);
+    --skeleton-1: theme(colors.neutral.700);
+    --skeleton-2: #1e1e1e;
+    --skeleton-3: theme(colors.neutral.700);
 
-  --celltext-selected: theme(colors.neutral.50);
-  --celltext-deselected: theme(colors.neutral.50);
+    --celltext-selected: theme(colors.neutral.50);
+    --celltext-deselected: theme(colors.neutral.50);
 
-  --calendar-background-started: rgba(97, 166, 185, 0.3);
-  --calendar-border: theme(colors.neutral.500);
+    --calendar-background-started: rgba(97, 166, 185, 0.3);
+    --calendar-border: theme(colors.neutral.500);
 }
 
 body {
-  margin: 0;
-  @apply bg-background text-primary;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    @apply bg-background text-primary;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
