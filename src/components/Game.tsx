@@ -9,7 +9,6 @@ import ControlButtons from './ControlButtons';
 import PlayButton from './PlayButton';
 import Timer from './Timer';
 import LetterButtons from './LetterButtons';
-import RankSystem from './RankSystem';
 
 interface GameProps {
   wordLength: number;

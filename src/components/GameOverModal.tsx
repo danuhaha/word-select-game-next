@@ -1,36 +1,10 @@
-import React, { useState } from 'react';
-
+import React from 'react';
 
 interface GameOverModalProps {
   readonly usedWords: Set<string>;
   readonly validWords: Set<string>;
   readonly score: number;
 }
-
-
-function isMobile() {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-}
-
-const DefinitionWord: React.FC<{ word: string }> = ({ word }) => {
-  const [show, setShow] = useState(false);
-  const mobile = typeof window !== 'undefined' ? isMobile() : false;
-
-  // Tooltip for desktop, click popup for mobile
-  return (
-    <span
-      className="relative cursor-help"
-      onMouseEnter={() => !mobile && setShow(true)}
-      onMouseLeave={() => !mobile && setShow(false)}
-      onClick={() => mobile && setShow((v) => !v)}
-      tabIndex={0}
-      style={{ position: 'relative', display: 'inline-block' }}
-    >
-      {word}
-    </span>
-  );
-};
 
 export const GameOverModal: React.FC<GameOverModalProps> = (props) => {
   const usedWordsArr = Array.from(props.usedWords);
@@ -79,4 +53,4 @@ export const GameOverModal: React.FC<GameOverModalProps> = (props) => {
       </button>
     </div>
   );
-}
+};
