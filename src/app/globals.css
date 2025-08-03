@@ -57,3 +57,24 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+.modal {
+    outline: none;
+    border: unset;
+    padding: unset;
+}
+
+dialog[open] {
+    animation: fadein 0.2s ease-in-out forwards;
+}
+
+@keyframes fadein {
+    0% {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

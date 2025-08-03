@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+
 
 interface GameOverModalProps {
   readonly usedWords: Set<string>;
@@ -6,7 +7,32 @@ interface GameOverModalProps {
   readonly score: number;
 }
 
-export const GameOverModal = (props: GameOverModalProps) => {
+
+function isMobile() {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+}
+
+const DefinitionWord: React.FC<{ word: string }> = ({ word }) => {
+  const [show, setShow] = useState(false);
+  const mobile = typeof window !== 'undefined' ? isMobile() : false;
+
+  // Tooltip for desktop, click popup for mobile
+  return (
+    <span
+      className="relative cursor-help"
+      onMouseEnter={() => !mobile && setShow(true)}
+      onMouseLeave={() => !mobile && setShow(false)}
+      onClick={() => mobile && setShow((v) => !v)}
+      tabIndex={0}
+      style={{ position: 'relative', display: 'inline-block' }}
+    >
+      {word}
+    </span>
+  );
+};
+
+export const GameOverModal: React.FC<GameOverModalProps> = (props) => {
   const usedWordsArr = Array.from(props.usedWords);
   const validWordsArr = Array.from(props.validWords);
   // Exclude the initial word (first in validWordsArr)
@@ -39,7 +65,7 @@ export const GameOverModal = (props: GameOverModalProps) => {
               {unusedWords
                 .filter((_, idx) => Math.floor(idx / 10) === col)
                 .map((word, idx) => (
-                  <li key={word + idx}>{word}</li>
+                  <li key={String(word) + idx}>{word}</li>
                 ))}
             </ul>
           ))}
@@ -53,4 +79,4 @@ export const GameOverModal = (props: GameOverModalProps) => {
       </button>
     </div>
   );
-};
+}

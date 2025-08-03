@@ -8,6 +8,7 @@ import { LuMenu, LuMoon, LuSun } from 'react-icons/lu';
 import { useTheme } from 'next-themes';
 import { Modal, useModal } from '@/components/Modal';
 import { GameRulesModal } from '@/components/GameRulesModal';
+import RankModal from '@/components/RankModal';
 
 export default function Home() {
   const [score, setScore] = useState<number>(0);
@@ -70,15 +71,22 @@ export default function Home() {
           </div>
         </div>
         <div className='relative mx-auto flex w-11/12 flex-1 flex-col items-center md:w-3/4 lg:w-7/12'>
-          <div className='mb-2 mt-4 flex items-center'>
+          <div className='mb-4 mt-4 flex items-center'>
             <h1 className='text-4xl font-semibold'>Слова</h1>
           </div>
 
           <div className='mx-auto mb-4 w-full'>
-            <RankSystem
-              score={score}
-              maxPossibleScore={maxPossibleScore}
-            />
+            <button
+              type="button"
+              className="w-full focus:outline-none"
+              onClick={() => showModal(<RankModal score={score} maxPossibleScore={maxPossibleScore} initialWord="" onClose={() => {}} />)}
+            >
+              <RankSystem
+                score={score}
+                maxPossibleScore={maxPossibleScore}
+                initialWord=""
+              />
+            </button>
           </div>
           {/* <hr className='border-cell-deselected mb-4 md:mb-4 w-full' /> */}
 

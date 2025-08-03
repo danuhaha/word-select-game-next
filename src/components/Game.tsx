@@ -9,6 +9,7 @@ import ControlButtons from './ControlButtons';
 import PlayButton from './PlayButton';
 import Timer from './Timer';
 import LetterButtons from './LetterButtons';
+import RankSystem from './RankSystem';
 
 interface GameProps {
   wordLength: number;
@@ -106,6 +107,7 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore }) =
         selected = getRandomRussianWord(minLength);
         valid = getValidRussianWords(selected) as Set<string>;
       }
+      console.log('amount of words', valid.size, 'max score', calculateMaxPossibleScore(valid));
       setSelectedWord(selected);
       prepareWord(selected, () => {
         setValidWords(valid);
@@ -337,22 +339,24 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore }) =
       {/* Play again button after game ends */}
 
       {gameEnded && (
-        <div className='mb-4 flex justify-center'>
-          <button
-            onClick={() => {
-              showModal(
-                <GameOverModal
-                  score={currentScore}
-                  usedWords={usedWords}
-                  validWords={validWords}
-                />
-              );
-            }}
-            className='rounded-full border border-primary px-4 py-3 text-xs font-medium xxs:text-sm xs:text-base'
-          >
-            Показать результаты
-          </button>
-        </div>
+        <>
+          <div className='mb-4 flex justify-center'>
+            <button
+              onClick={() => {
+                showModal(
+                  <GameOverModal
+                    score={currentScore}
+                    usedWords={usedWords}
+                    validWords={validWords}
+                  />
+                );
+              }}
+              className='rounded-full border border-primary px-4 py-3 text-xs font-medium xxs:text-sm xs:text-base'
+            >
+              Показать результаты
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
