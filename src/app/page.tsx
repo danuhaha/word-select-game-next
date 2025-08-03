@@ -13,6 +13,7 @@ import RankModal from '@/components/RankModal';
 export default function Home() {
   const [score, setScore] = useState<number>(0);
   const [maxPossibleScore, setMaxPossibleScore] = useState<number>(0);
+  const [initialWord, setInitialWord] = useState<string>('');
   const [key] = useState<number>(1);
   const { theme, setTheme } = useTheme();
   const [dialogProps, showModal] = useModal();
@@ -23,6 +24,10 @@ export default function Home() {
 
   const setMaxPossibleScoreHandler = (maxScore: number) => {
     setMaxPossibleScore(maxScore);
+  };
+
+  const setInitialWordHandler = (word: string) => {
+    setInitialWord(word);
   };
 
   // This function receives valid words from the Game component, but we don't need to store them
@@ -79,12 +84,12 @@ export default function Home() {
             <button
               type="button"
               className="w-full focus:outline-none"
-              onClick={() => showModal(<RankModal score={score} maxPossibleScore={maxPossibleScore} initialWord="" onClose={() => {}} />)}
+              onClick={() => showModal(<RankModal score={score} maxPossibleScore={maxPossibleScore} initialWord={initialWord} onClose={() => {}} />)}
             >
               <RankSystem
                 score={score}
                 maxPossibleScore={maxPossibleScore}
-                initialWord=""
+                initialWord={initialWord}
               />
             </button>
           </div>
@@ -96,6 +101,7 @@ export default function Home() {
             getData={getDataHandler}
             setScore={setScoreHandler}
             setMaxPossibleScore={setMaxPossibleScoreHandler}
+            setInitialWord={setInitialWordHandler}
           />
         </div>
         <div className='my-2 mb-4 flex items-center justify-center'>

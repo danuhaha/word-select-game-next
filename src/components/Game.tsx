@@ -15,9 +15,10 @@ interface GameProps {
   getData: (validWords: string[]) => void;
   setScore: (score: number) => void;
   setMaxPossibleScore: (maxScore: number) => void;
+  setInitialWord: (word: string) => void;
 }
 
-const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore }) => {
+const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, setInitialWord }) => {
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [jumbledWord, setJumbledWord] = useState<string[]>([]);
   const [validWords, setValidWords] = useState<Set<string>>(new Set());
@@ -108,6 +109,7 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore }) =
       }
       console.log('amount of words', valid.size, 'max score', calculateMaxPossibleScore(valid));
       setSelectedWord(selected);
+      setInitialWord(selected); // Pass the word to parent component
       prepareWord(selected, () => {
         setValidWords(valid);
         const maxScore = calculateMaxPossibleScore(valid);
