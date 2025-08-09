@@ -1,10 +1,15 @@
 import russianWords from '@/data/russianWords.json';
+import addedWords from '@/data/addedWords.json';
 
 /**
  * Gets the Russian words array
  */
 export const getRussianWords = (): string[] => {
-  return russianWords;
+  // Merge base and added words, ensure lowercase and uniqueness
+  const merged = new Set<string>();
+  for (const w of russianWords) merged.add(String(w).toLowerCase());
+  for (const w of addedWords) merged.add(String(w).toLowerCase());
+  return Array.from(merged);
 };
 
 /**

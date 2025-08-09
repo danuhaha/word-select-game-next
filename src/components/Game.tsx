@@ -163,7 +163,7 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
     }
 
     if (usedWords.has(word)) {
-      setError('Вы уже использовали это слово');
+      setError('Это слово уже использовано');
       return;
     }
 
@@ -176,7 +176,24 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
       setCurrentScore((prev) => prev + calculateScore(word));
       clearError();
     } else {
-      setError('Недопустимое слово');
+      setError('Такого слова нет у нас в словаре :(');
+      try {
+        // Report invalid word to Telegram via server API (non-blocking)
+        const reportUrl = process.env.NEXT_PUBLIC_REPORT_URL || '/api/telegram-report';
+        fetch(reportUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            word,
+            initialWord: selectedWord,
+            jumbledWord,
+            selectedLetters,
+            meta: { reason: 'not_in_dictionary' },
+          }),
+        }).catch(() => {});
+      } catch (_) {
+        // Silently ignore reporting errors
+      }
     }
   }, [selectedLetters, clearSelectedHandler, usedWords, selectedWord, validWords, clearError, calculateScore]);
 
@@ -273,7 +290,7 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
       {/* Error popup - positioned absolutely */}
       {error && (
         <div className='fixed left-1/2 top-4 z-50 -translate-x-1/2 transform'>
-          <div className='rounded-lg border border-primary bg-background px-6 py-3 shadow-lg'>
+          <div className='rounded-lg border border-primary bg-background px-3 py-2'>
             <p className='font-medium text-primary'>{error}</p>
           </div>
         </div>
@@ -299,7 +316,15 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
           </div>
         </div>
       </div>
-      <div className={`${gameEnded ? 'pointer-events-none opacity-50' : ''}`}>
+      <div
+        className={
+          !gameStarted
+        ? 'pointer-events-none'
+        : gameEnded
+        ? 'pointer-events-none opacity-50'
+        : ''
+        }
+      >
         <LetterButtons
           jumbledWord={jumbledWord}
           selectedIndices={selectedIndices}
@@ -307,6 +332,7 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
           letterCounts={letterCounts}
           clearError={clearError}
           gameStarted={gameStarted}
+          onBackspace={backspaceHandler}
         />
 
         {/* Timer always visible when game started and not ended */}

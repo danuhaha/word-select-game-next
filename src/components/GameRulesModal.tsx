@@ -8,14 +8,25 @@ export const GameRulesModal = () => {
         </h2>
         <h3 className='mb-2 text-sm'>• Слова должны состоять из 4-х и более букв</h3>
         <h3 className='mb-2 text-sm'>• Принимаются только имена нарицательные в единственном числе</h3>
+        <h3 className='mb-2 text-sm'>• Е и Ё - разные буквы!</h3>
         <h3 className='mb-5 text-sm'>• У тебя есть ровно 7 минут!</h3>
         <h3 className='mb-2 text-sm'>
-          <b>Зарабатывай очки, чтобы продвинуться в рейтинге </b>
+          <b>Зарабатывай баллы, чтобы продвинуться в рейтинге </b>
         </h3>
-        <h3 className='mb-2 text-sm'>• Слова из 4-х букв стоят 1 очко</h3>
-        <h3 className='mb-5 text-sm'>• Более длинные слова оцениваются по 1-му очку за каждую букву</h3>
+        <h3 className='mb-2 text-sm'>• Слова из 4-х букв стоят 1 балл</h3>
+        <h3 className='mb-5 text-sm'>• Более длинные слова оцениваются по 1-му баллу за каждую букву</h3>
 
-        <h3 className='mb-2 text-sm'>Считаешь, что мы пропустили слово? Напиши нам куда-то хаха лооол</h3>
+        <h3 className='mb-2 text-sm'>
+          Считаешь, что мы пропустили слово? Напиши нам в Телеграм:&nbsp;
+          <a
+            href="https://t.me/categories4_bot"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            @categories4_bot
+          </a>
+        </h3>
       </div>
     </div>
   );

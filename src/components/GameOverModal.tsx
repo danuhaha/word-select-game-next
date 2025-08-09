@@ -26,10 +26,10 @@ export const GameOverModal: React.FC<GameOverModalProps> = (props) => {
         Ваш финальный счёт: <span className='text-maincolor'>{props.score}</span>
       </p>
       <p className='mb-4 text-xs font-semibold text-primary'>
-        Найдено слов: {usedWordsArr.length} из {validWordsArr.length}
+        Найдено слов: {usedWordsArr.length}
       </p>
       <div className='mb-4'>
-        <h3 className='mb-2 text-lg font-semibold'>Пропущенные слова:</h3>
+        <h3 className='mb-2 text-lg font-semibold'>Некоторые ненайденные слова:</h3>
         <div className='flex flex-row justify-center gap-2'>
           {[0, 1, 2].map((col) => (
             <ul
