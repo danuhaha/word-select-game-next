@@ -19,23 +19,15 @@ export async function POST(req: NextRequest) {
       channel?: string;
     }
 
-    const body: TelegramReportBody = await req.json().catch(() => ({} as TelegramReportBody));
-    const { word, initialWord, jumbledWord, selectedLetters, meta, channel = '@categories_4' } = body || {};
+    const body: TelegramReportBody = await req.json().catch(() => ({}) as TelegramReportBody);
+    const { word, initialWord, channel = '@categories_4' } = body || {};
 
     if (!word) {
       return new Response(JSON.stringify({ ok: false, error: 'Missing "word" in body' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     const now = new Date().toISOString();
-    const text = [
-      `🚫 Invalid word submitted`,
-      `Word: ${word}`,
-      initialWord ? `Initial: ${initialWord}` : undefined,
-      selectedLetters ? `Selected: ${selectedLetters.join('')}` : undefined,
-      jumbledWord ? `Pool: ${Array.isArray(jumbledWord) ? jumbledWord.join('') : String(jumbledWord)}` : undefined,
-      meta ? `Meta: ${JSON.stringify(meta)}` : undefined,
-      `When: ${now}`,
-    ]
+    const text = [`🚫 Неизвестное слово`, `Слово: *${word}*`, initialWord ? `Исходное слово: ${initialWord}` : undefined, `Когда: ${now}`]
       .filter(Boolean)
       .join('\n');
 

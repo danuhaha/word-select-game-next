@@ -9,6 +9,8 @@ import ControlButtons from './ControlButtons';
 import PlayButton from './PlayButton';
 import Timer from './Timer';
 import LetterButtons from './LetterButtons';
+import { Popup } from './Popup';
+import { usePopup } from './usePopup';
 
 interface GameProps {
   wordLength: number;
@@ -25,7 +27,6 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
   const [usedWords, setUsedWords] = useState<Set<string>>(new Set());
   const [selectedLetters, setSelectedLetters] = useState<string[]>([]);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [letterCounts, setLetterCounts] = useState<Record<string, number>>({});
   const [currentScore, setCurrentScore] = useState<number>(0);
   const [, setButtonResetTrigger] = useState<number>(0);
@@ -33,16 +34,7 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
   const [gameEnded, setGameEnded] = useState<boolean>(false);
   const [gameStarted, setGameStarted] = useState<boolean>(false);
   const [dialogProps, showModal] = useModal();
-
-  // Auto-clear error after 5 seconds
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => {
-        setError(null);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [error]);
+  const [popupContent, showPopup] = usePopup();
 
   const prepareWord = useCallback((wordStr: string, callback: (prepared: string[]) => void) => {
     wordStr = wordStr.toLowerCase();
@@ -148,8 +140,8 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
   }, []);
 
   const clearError = useCallback(() => {
-    setError(null);
-  }, []);
+    showPopup('');
+  }, [showPopup]);
 
   const submitHandler = useCallback(() => {
     const word = selectedLetters.join('');
@@ -158,17 +150,17 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
     clearSelectedHandler();
 
     if (word.length < 4) {
-      setError('Слово должно быть не менее 4 букв');
+      showPopup('Слово должно быть не менее 4 букв');
       return;
     }
 
     if (usedWords.has(word)) {
-      setError('Это слово уже использовано');
+      showPopup('Это слово уже использовано');
       return;
     }
 
     if (word === selectedWord) {
-      setError('Нельзя использовать исходное слово');
+      showPopup('Нельзя использовать исходное слово');
       return;
     }
     if (isRussianWordValid(word, validWords)) {
@@ -176,7 +168,7 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
       setCurrentScore((prev) => prev + calculateScore(word));
       clearError();
     } else {
-      setError('Такого слова нет у нас в словаре :(');
+      showPopup('Такого слова нет у нас в словаре :(');
       try {
         // Report invalid word to Telegram via server API (non-blocking)
         const reportUrl = process.env.NEXT_PUBLIC_REPORT_URL || '/api/telegram-report';
@@ -195,7 +187,7 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
         // Silently ignore reporting errors
       }
     }
-  }, [selectedLetters, clearSelectedHandler, usedWords, selectedWord, validWords, clearError, calculateScore, jumbledWord]);
+  }, [selectedLetters, clearSelectedHandler, usedWords, selectedWord, validWords, clearError, calculateScore, jumbledWord, showPopup]);
 
   const backspaceHandler = useCallback(() => {
     if (selectedLetters.length > 0) {
@@ -287,20 +279,13 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
   return (
     <div className='mx-auto w-full'>
       <Modal {...dialogProps} />
-      {/* Error popup - positioned absolutely */}
-      {error && (
-        <div className='fixed left-1/2 top-4 z-50 -translate-x-1/2 transform'>
-          <div className='rounded-lg border border-primary bg-background px-3 py-2'>
-            <p className='font-medium text-primary'>{error}</p>
-          </div>
-        </div>
-      )}
 
       <WordTable usedWords={usedWords} />
 
       <div className=''>
         <div className='text-center'>
-          <div className='mb-8 mt-8 flex min-h-[2rem] flex-wrap justify-center gap-1 px-2 sm:gap-2'>
+          <div className='relative mb-8 mt-8 flex min-h-[2rem] flex-wrap justify-center gap-1 px-2 sm:gap-2'>
+            <Popup message={popupContent} />
             {selectedLetters.length > 0 ? (
               selectedLetters.map((letter, index) => (
                 <span
@@ -316,15 +301,7 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
           </div>
         </div>
       </div>
-      <div
-        className={
-          !gameStarted
-        ? 'pointer-events-none'
-        : gameEnded
-        ? 'pointer-events-none opacity-50'
-        : ''
-        }
-      >
+      <div className={!gameStarted ? 'pointer-events-none' : gameEnded ? 'pointer-events-none opacity-50' : ''}>
         <LetterButtons
           jumbledWord={jumbledWord}
           selectedIndices={selectedIndices}
