@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 
 // Helper to call Telegram API
-async function tgCall(token: string, method: string, payload: any) {
+async function tgCall(token: string, method: string, payload: Record<string, unknown>) {
   const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -10,13 +10,7 @@ async function tgCall(token: string, method: string, payload: any) {
   return res.json();
 }
 
-async function getGithubFile(
-  token: string,
-  owner: string,
-  repo: string,
-  path: string,
-  branch: string
-) {
+async function getGithubFile(token: string, owner: string, repo: string, path: string, branch: string) {
   const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(branch)}`;
   const res = await fetch(url, {
     headers: {
@@ -68,8 +62,7 @@ export async function POST(req: NextRequest) {
     if (hdr !== secret) return new Response('Forbidden', { status: 403 });
   }
 
-  const body = await req.json().catch(() => ({}));
-  const update = body;
+  const update = await req.json().catch(() => ({}));
 
   const callback = update?.callback_query;
   if (!callback) {
@@ -81,7 +74,6 @@ export async function POST(req: NextRequest) {
 
   const id = callback.id as string;
   const fromId = callback.from?.id as number | undefined;
-  const fromUsername = callback.from?.username as string | undefined;
   const data = callback.data as string | undefined;
   const message = callback.message;
 
@@ -96,7 +88,7 @@ export async function POST(req: NextRequest) {
     return new Response('Unauthorized user', { status: 403 });
   }
 
-  let payload: any;
+  let payload: { a?: string; w?: string } | undefined;
   try {
     payload = data ? JSON.parse(data) : undefined;
   } catch {
@@ -140,16 +132,7 @@ export async function POST(req: NextRequest) {
     arr.sort();
     const nextStr = JSON.stringify(arr, null, 2) + '\n';
     const nextB64 = Buffer.from(nextStr, 'utf-8').toString('base64');
-    await putGithubFile(
-      ghToken,
-      ghOwner,
-      ghRepo,
-      filePath,
-      ghBranch,
-      nextB64,
-      sha,
-      `chore(dict): add word "${word}" via Telegram`
-    );
+    await putGithubFile(ghToken, ghOwner, ghRepo, filePath, ghBranch, nextB64, sha, `chore(dict): add word "${word}" via Telegram`);
 
     // Acknowledge with a toast and update message markup
     await tgCall(token, 'answerCallbackQuery', {
@@ -171,13 +154,13 @@ export async function POST(req: NextRequest) {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const errorMessage = typeof e === 'object' && e !== null && 'message' in e ? (e as { message?: string }).message : 'неизвестная';
     await tgCall(token, 'answerCallbackQuery', {
       callback_query_id: id,
-      text: `Ошибка: ${e?.message || 'неизвестная'}`,
+      text: `Ошибка: ${errorMessage}`,
       show_alert: true,
     });
     return new Response('GitHub update failed', { status: 500 });
   }
 }
-

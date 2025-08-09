@@ -118,7 +118,7 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
         getData(Array.from(valid) as string[]);
       });
     },
-    [calculateMaxPossibleScore, getData, setMaxPossibleScore, prepareWord]
+    [calculateMaxPossibleScore, getData, setMaxPossibleScore, prepareWord, setInitialWord]
   );
 
   useEffect(() => {
@@ -191,11 +191,11 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
             meta: { reason: 'not_in_dictionary' },
           }),
         }).catch(() => {});
-      } catch (_) {
+      } catch {
         // Silently ignore reporting errors
       }
     }
-  }, [selectedLetters, clearSelectedHandler, usedWords, selectedWord, validWords, clearError, calculateScore]);
+  }, [selectedLetters, clearSelectedHandler, usedWords, selectedWord, validWords, clearError, calculateScore, jumbledWord]);
 
   const backspaceHandler = useCallback(() => {
     if (selectedLetters.length > 0) {
