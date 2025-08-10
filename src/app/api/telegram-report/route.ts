@@ -20,16 +20,13 @@ export async function POST(req: NextRequest) {
     }
 
     const body: TelegramReportBody = await req.json().catch(() => ({}) as TelegramReportBody);
-    const { word, initialWord, channel = '@categories_4' } = body || {};
+    const { word, channel = '@categories_4' } = body || {};
 
     if (!word) {
       return new Response(JSON.stringify({ ok: false, error: 'Missing "word" in body' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    const now = new Date().toISOString();
-    const text = [`🚫 Неизвестное слово`, `Слово: *${word}*`, initialWord ? `Исходное слово: ${initialWord}` : undefined, `Когда: ${now}`]
-      .filter(Boolean)
-      .join('\n');
+    const text = [`Слово: <b>${word}</b>`].filter(Boolean).join('\n');
 
     const chatId = process.env.TELEGRAM_CHAT_ID || channel;
     const reply_markup = {
@@ -46,7 +43,7 @@ export async function POST(req: NextRequest) {
     const tgResp = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text, reply_markup }),
+      body: JSON.stringify({ chat_id: chatId, text, reply_markup, parse_mode: 'html' }),
     });
 
     const tgJson = await tgResp.json().catch(() => ({}));

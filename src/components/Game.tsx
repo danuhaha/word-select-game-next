@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { getCurrentRankName } from '@/utils/rank';
+import { motion, AnimatePresence } from 'framer-motion';
 import WordTable from './WordTable';
 import { getRandomRussianWord, prepareRussianWord, getValidRussianWords, isRussianWordValid, getRussianWords } from '@/utils/russianDictionary';
 import { Modal, useModal } from './Modal';
@@ -30,11 +32,12 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
   const [letterCounts, setLetterCounts] = useState<Record<string, number>>({});
   const [currentScore, setCurrentScore] = useState<number>(0);
   const [, setButtonResetTrigger] = useState<number>(0);
-  const [, setMaxPossibleScoreState] = useState<number>(0);
+  const [maxPossibleScoreState, setMaxPossibleScoreState] = useState<number>(0);
   const [gameEnded, setGameEnded] = useState<boolean>(false);
   const [gameStarted, setGameStarted] = useState<boolean>(false);
   const [dialogProps, showModal] = useModal();
   const [popupContent, showPopup] = usePopup();
+  const [scorePopups, setScorePopups] = useState<{ id: number; amount: number; x: number }[]>([]);
 
   const prepareWord = useCallback((wordStr: string, callback: (prepared: string[]) => void) => {
     wordStr = wordStr.toLowerCase();
@@ -139,6 +142,19 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
     setButtonResetTrigger((prev) => prev + 1);
   }, []);
 
+  const shuffleLetters = useCallback(() => {
+    // Clear current selection to avoid index mismatch
+    clearSelectedHandler();
+    setJumbledWord((prev) => {
+      const arr = [...prev];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    });
+  }, [clearSelectedHandler]);
+
   const clearError = useCallback(() => {
     showPopup('');
   }, [showPopup]);
@@ -165,7 +181,15 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
     }
     if (isRussianWordValid(word, validWords)) {
       setUsedWords((prev) => new Set([...prev, word]));
-      setCurrentScore((prev) => prev + calculateScore(word));
+      const gained = calculateScore(word);
+      setCurrentScore((prev) => prev + gained);
+      // Trigger score fly-up popup near the entered word
+      const id = Date.now() + Math.floor(Math.random() * 1000);
+      const x = Math.floor(Math.random() * 40) - 20; // slight horizontal variance
+      setScorePopups((prev) => [...prev, { id, amount: gained, x }]);
+      setTimeout(() => {
+        setScorePopups((prev) => prev.filter((p) => p.id !== id));
+      }, 900);
       clearError();
     } else {
       showPopup('Такого слова нет у нас в словаре :(');
@@ -211,17 +235,19 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
 
   useEffect(() => {
     if (gameEnded) {
+      const rankName = selectedWord ? getCurrentRankName(currentScore, maxPossibleScoreState, selectedWord) : '';
       showModal(
         <GameOverModal
           score={currentScore}
           usedWords={usedWords}
           validWords={validWords}
+          rank={rankName}
         />
       );
       setSelectedLetters([]);
       setSelectedIndices([]);
     }
-  }, [currentScore, gameEnded, showModal, usedWords, usedWords.size, validWords, validWords.size]);
+  }, [currentScore, gameEnded, showModal, usedWords, usedWords.size, validWords, validWords.size, selectedWord, maxPossibleScoreState]);
 
   // Keyboard event handler
   useEffect(() => {
@@ -282,10 +308,35 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
 
       <WordTable usedWords={usedWords} />
 
+      {/* Initial word display or skeleton */}
+      <div className='mt-4 px-2 text-center'>
+        {selectedWord ? (
+          <span className={`block text-base font-bold text-primary sm:text-lg ${!gameStarted ? 'blur-sm filter' : ''}`}>{selectedWord.toUpperCase()}</span>
+        ) : (
+          <span className='mx-auto block h-6 w-[18ch] animate-pulse rounded bg-cell-deselected blur-sm filter sm:h-7' />
+        )}
+      </div>
+
       <div className=''>
         <div className='text-center'>
           <div className='relative mb-8 mt-8 flex min-h-[2rem] flex-wrap justify-center gap-1 px-2 sm:gap-2'>
             <Popup message={popupContent} />
+            {/* Points fly-up popups */}
+            <AnimatePresence initial={false}>
+              {scorePopups.map((p) => (
+                <motion.span
+                  key={p.id}
+                  initial={{ y: 0, opacity: 0, scale: 0.9 }}
+                  animate={{ y: -28, opacity: 1, scale: 1 }}
+                  exit={{ y: -52, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  className={`pointer-events-none absolute left-1/2 top-0 flex -translate-x-1/2 items-center justify-center rounded-lg bg-maincolor px-1 py-0.5 text-sm font-extrabold text-lettertext`}
+                  style={{ marginLeft: p.x }}
+                >
+                  +{p.amount}
+                </motion.span>
+              ))}
+            </AnimatePresence>
             {selectedLetters.length > 0 ? (
               selectedLetters.map((letter, index) => (
                 <span
@@ -296,26 +347,37 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
                 </span>
               ))
             ) : (
-              <span className='py-1 text-sm text-secondary sm:text-base'>Введите слово</span>
+              <span className={`py-1 text-sm text-secondary sm:text-base ${!gameStarted ? 'invisible' : ''}`}>Введите слово</span>
             )}
           </div>
         </div>
       </div>
       <div className={!gameStarted ? 'pointer-events-none' : gameEnded ? 'pointer-events-none opacity-50' : ''}>
-        <LetterButtons
-          jumbledWord={jumbledWord}
-          selectedIndices={selectedIndices}
-          setSelectedHandler={setSelectedHandler}
-          letterCounts={letterCounts}
-          clearError={clearError}
-          gameStarted={gameStarted}
-          onBackspace={backspaceHandler}
-        />
+        {jumbledWord.length > 0 ? (
+          <LetterButtons
+            jumbledWord={jumbledWord}
+            selectedIndices={selectedIndices}
+            setSelectedHandler={setSelectedHandler}
+            letterCounts={letterCounts}
+            clearError={clearError}
+            gameStarted={gameStarted}
+            onBackspace={backspaceHandler}
+          />
+        ) : (
+          <div className='mb-4 flex flex-wrap justify-center gap-1 px-2 blur-sm filter'>
+            {Array.from({ length: 14 }).map((_, i) => (
+              <span
+                key={i}
+                className='h-12 w-12 animate-pulse rounded bg-cell-deselected'
+              />
+            ))}
+          </div>
+        )}
 
         {/* Timer always visible when game started and not ended */}
         <div className={`mb-4 flex items-center justify-center ${!gameStarted ? 'invisible' : ''}`}>
           <Timer
-            seconds={420000}
+            seconds={5000}
             setTimeHandler={() => {}}
             onTimerEndHandler={() => setGameEnded(true)}
             shouldStart={gameStarted && !gameEnded}
@@ -335,6 +397,7 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
           onClear={clearSelectedHandler}
           onBackspace={backspaceHandler}
           onSubmit={submitHandler}
+          onShuffle={shuffleLetters}
           selectedLettersCount={selectedLetters.length}
         />
       )}
@@ -347,11 +410,13 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
           <div className='mb-4 flex justify-center'>
             <button
               onClick={() => {
+                const rankName = selectedWord ? getCurrentRankName(currentScore, maxPossibleScoreState, selectedWord) : '';
                 showModal(
                   <GameOverModal
                     score={currentScore}
                     usedWords={usedWords}
                     validWords={validWords}
+                    rank={rankName}
                   />
                 );
               }}

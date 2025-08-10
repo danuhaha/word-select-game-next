@@ -10,8 +10,28 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: 'Word Select Game',
-  description: 'A word game where you find words within a jumbled word',
+  title: 'Слова',
+  description: 'Составь как можно больше слов!',
+  metadataBase: new URL('https://games.onthewifi.com/words'),
+  icons: {
+    icon: `/icon.ico`,
+    apple: `/apple-icon.png`,
+  },
+  openGraph: {
+    title: 'Слова',
+    description: 'Составь как можно больше слов!',
+    url: 'https://games.onthewifi.com/words',
+    siteName: 'Слова',
+    images: [
+      {
+        url: '/opengraph-image.png',
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: 'ru',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({

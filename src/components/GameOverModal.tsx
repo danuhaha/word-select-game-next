@@ -4,6 +4,7 @@ interface GameOverModalProps {
   readonly usedWords: Set<string>;
   readonly validWords: Set<string>;
   readonly score: number;
+  readonly rank: string;
 }
 
 export const GameOverModal: React.FC<GameOverModalProps> = (props) => {
@@ -25,11 +26,10 @@ export const GameOverModal: React.FC<GameOverModalProps> = (props) => {
       <p className='mb-1 text-lg font-bold'>
         Ваш финальный счёт: <span className='text-maincolor'>{props.score}</span>
       </p>
-      <p className='mb-4 text-xs font-semibold text-primary'>
-        Найдено слов: {usedWordsArr.length}
-      </p>
+      <p className='mb-1 text-xs font-semibold text-primary'>Рейтинг: {props.rank}</p>
+      <p className='mb-4 text-xs font-semibold text-primary'>Найдено слов: {usedWordsArr.length}</p>
       <div className='mb-4'>
-        <h3 className='mb-2 text-lg font-semibold'>Некоторые ненайденные слова:</h3>
+        <h3 className='mb-2 text-lg font-semibold'>Некоторые ненайденные&nbsp;слова:</h3>
         <div className='flex flex-row justify-center gap-2'>
           {[0, 1, 2].map((col) => (
             <ul

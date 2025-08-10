@@ -25,11 +25,16 @@ const WordTable: React.FC<WordTableProps> = ({ usedWords }) => {
   }, [usedWords]);
   // Track last animation direction
   const [expandDirection, setExpandDirection] = useState<'up' | 'down'>('up');
+  const firstMountRef = useRef(true);
 
   // Update direction on expand/collapse
   useEffect(() => {
     setExpandDirection(isExpanded ? 'up' : 'down');
   }, [isExpanded]);
+  useEffect(() => {
+    // Prevent entrance y-translate on the very first paint only
+    firstMountRef.current = false;
+  }, []);
 
   const renderCollapsedView = () => {
     // Move lengthGroups and limitedSortedLengths to the top of renderCollapsedView so they are in scope
@@ -43,8 +48,6 @@ const WordTable: React.FC<WordTableProps> = ({ usedWords }) => {
     const sortedLengths = Object.keys(lengthGroups)
       .map(Number)
       .sort((a, b) => a - b);
-    const maxDisplayedLengths = 6;
-    const limitedSortedLengths = sortedLengths.slice(0, maxDisplayedLengths);
 
     return (
       <div
@@ -60,15 +63,23 @@ const WordTable: React.FC<WordTableProps> = ({ usedWords }) => {
         ref={containerRef}
       >
         <div className='flex items-center'>
-          <div className='relative flex-1 overflow-hidden'>
+          <div
+            className='relative min-h-[28px] flex-1 overflow-hidden'
+            style={{
+              WebkitMaskImage: 'linear-gradient(to right, black 0%, black calc(100% - 28px), transparent 100%)',
+              maskImage: 'linear-gradient(to right, black 0%, black calc(100% - 28px), transparent 100%)',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
+            }}
+          >
             <AnimatePresence mode='wait'>
               {isExpanded && usedWords.size !== 0 ? (
                 <motion.div
                   key='summary'
-                  initial={{ y: expandDirection === 'up' ? -10 : 10, opacity: 0 }}
+                  initial={firstMountRef.current ? false : { y: expandDirection === 'up' ? -10 : 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: expandDirection === 'up' ? -10 : 10, opacity: 0 }}
-                  transition={{ duration: 0.1 }}
+                  transition={{ duration: 0.12 }}
                   className='flex gap-1'
                 >
                   <span className='px-2 py-1 text-sm font-medium text-primary'>
@@ -78,23 +89,24 @@ const WordTable: React.FC<WordTableProps> = ({ usedWords }) => {
               ) : (
                 <motion.div
                   key='words'
-                  initial={{ y: expandDirection === 'up' ? -10 : 10, opacity: 0 }}
+                  initial={firstMountRef.current ? false : { y: expandDirection === 'up' ? -10 : 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: expandDirection === 'up' ? -10 : 10, opacity: 0 }}
-                  transition={{ duration: 0.1 }}
+                  transition={{ duration: 0.12 }}
                   className='flex gap-1'
                 >
                   {usedWords.size === 0 ? (
                     <span className='px-2 py-1 text-sm text-secondary'>Начните составлять слова...</span>
                   ) : (
                     <AnimatePresence initial={false}>
-                      {visibleWords.map((word, index) => (
+                      {visibleWords.map((word) => (
                         <motion.span
-                          key={index}
-                          initial={{ x: -40, opacity: 0 }}
+                          key={word}
+                          layout='position'
+                          initial={{ x: -24, opacity: 0 }}
                           animate={{ x: 0, opacity: 1 }}
-                          exit={{ x: -40, opacity: 0 }}
-                          transition={{ duration: 0.1, ease: 'easeOut' }}
+                          exit={{ x: -24, opacity: 0 }}
+                          transition={{ duration: 0.15, ease: 'easeOut' }}
                           className='flex-shrink-0 whitespace-nowrap rounded bg-background px-2 py-1 text-sm font-medium'
                         >
                           {word.charAt(0).toUpperCase() + word.slice(1)}
@@ -105,6 +117,7 @@ const WordTable: React.FC<WordTableProps> = ({ usedWords }) => {
                 </motion.div>
               )}
             </AnimatePresence>
+            {/* Mask-based fade handles seamless right edge; overlay removed */}
           </div>
           <div className='ml-2'>
             <IoIosArrowDown className={`text-secondary transition-transform duration-300 ${isExpanded ? 'rotate-180' : 'rotate-0'}`} />
@@ -127,7 +140,7 @@ const WordTable: React.FC<WordTableProps> = ({ usedWords }) => {
                     {usedWords.size === 0 ? (
                       <p className='w-full text-center text-secondary'>Пока слов не найдено</p>
                     ) : (
-                      limitedSortedLengths.map((len: number) => (
+                      sortedLengths.map((len: number) => (
                         <div
                           key={len}
                           className=''
@@ -135,14 +148,17 @@ const WordTable: React.FC<WordTableProps> = ({ usedWords }) => {
                           <div className='mb-2 whitespace-nowrap px-2 text-xs font-bold text-secondary'>
                             {len} {len === 4 ? 'буквы' : 'букв'}
                           </div>
-                          {lengthGroups[len].map((word: string, idx: number) => (
-                            <div
-                              key={word + idx}
-                              className='rounded-lg bg-background px-2 transition-colors'
-                            >
-                              <span className='text-sm font-medium'>{word.charAt(0).toUpperCase() + word.slice(1)}</span>
-                            </div>
-                          ))}
+                          {lengthGroups[len]
+                            .slice()
+                            .sort((a, b) => a.localeCompare(b, 'ru', { sensitivity: 'base' }))
+                            .map((word: string, idx: number) => (
+                              <div
+                                key={word + idx}
+                                className='rounded-lg bg-background px-2 transition-colors'
+                              >
+                                <span className='text-sm font-medium'>{word.charAt(0).toUpperCase() + word.slice(1)}</span>
+                              </div>
+                            ))}
                         </div>
                       ))
                     )}

@@ -83,7 +83,7 @@ export default function Home() {
           <div className='mx-auto mb-4 w-full'>
             <button
               type="button"
-              className="w-full focus:outline-none"
+              className="block h-7 w-full p-0 leading-none focus:outline-none"
               onClick={() => showModal(<RankModal score={score} maxPossibleScore={maxPossibleScore} initialWord={initialWord} onClose={() => {}} />)}
             >
               <RankSystem
