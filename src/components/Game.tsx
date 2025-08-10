@@ -377,7 +377,7 @@ const Game: React.FC<GameProps> = ({ getData, setScore, setMaxPossibleScore, set
         {/* Timer always visible when game started and not ended */}
         <div className={`mb-4 flex items-center justify-center ${!gameStarted ? 'invisible' : ''}`}>
           <Timer
-            seconds={5000}
+            seconds={420000}
             setTimeHandler={() => {}}
             onTimerEndHandler={() => setGameEnded(true)}
             shouldStart={gameStarted && !gameEnded}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { getDynamicRankThresholds } from '@/utils/rank';
+import { getDynamicRankThresholdsForRankSystem } from '@/utils/rank';
 
 interface RankSystemProps {
   score: number;
@@ -23,7 +23,7 @@ const RankSystem: React.FC<RankSystemProps> = ({ score, maxPossibleScore, initia
     }
 
     // Calculate ranks when word is available
-    const calculatedRanks = getDynamicRankThresholds(maxPossibleScore, initialWord);
+    const calculatedRanks = getDynamicRankThresholdsForRankSystem(maxPossibleScore, initialWord);
     setRanks(calculatedRanks);
     setIsLoading(false);
   }, [initialWord, maxPossibleScore]);
@@ -62,9 +62,7 @@ const RankSystem: React.FC<RankSystemProps> = ({ score, maxPossibleScore, initia
     <div className='flex h-7 items-center'>
       {/* Current rank name on the left */}
       <div className='min-w-[10ch] flex-shrink-0'>
-        <h2 className='text-red ml-2 mr-2 text-lg font-bold leading-7 sm:text-xl'>
-          {currentRank?.name || ''}
-        </h2>
+        <h2 className='text-red ml-2 mr-2 text-lg font-bold leading-7 sm:text-xl'>{currentRank?.name || ''}</h2>
       </div>
       {/* Progress line with circular markings */}
       <div className='relative mr-2 flex-1'>
